@@ -1,0 +1,26 @@
+nix:
+  packages:
+  - haskellPackages.gtk2hs-buildtools
+  - haskellPackages.happy
+  - haskellPackages.alex
+  - pkgconfig
+  - webkitgtk2
+  - glib
+  - cairo
+  - pango
+  - gtk
+  enable: false
+extra-package-dbs: []
+packages:
+- '.'
+extra-deps:
+- aeson-0.11.2.0
+- cmark-0.5.2.1
+- directory-1.2.6.3
+- pandoc-1.17.0.3
+- texmath-0.8.6.3
+- text-1.2.2.1
+- webkit-0.14.1.0
+- yaml-0.8.16
+- zip-archive-0.3.0.2
+resolver: lts-5.9
