@@ -1,7 +1,8 @@
 {-# LANGUAGE BangPatterns, ScopedTypeVariables #-}
 module Main where
 
-import Data.IORef
+import Style
+
 import Graphics.UI.Gtk
 import Graphics.UI.Gtk.WebKit.WebView
 import Control.Concurrent
@@ -16,7 +17,7 @@ import Control.Exception
 
 main :: IO ()
 main = do
-  print =<< initGUI
+  initGUI
   filename <- getFileName
   que <- doesFileExist filename
   if que
@@ -51,8 +52,8 @@ launchWatchdog file webview = do
 loadFile :: String -> IO String
 loadFile file = do
   !mrkdwn <- TT.readFile file
-  let qq = readMarkdown def ( T.unpack mrkdwn )
-  let pp = either (error "FUBAR") id qq
+  let qq = readMarkdown def ( foo ++ T.unpack mrkdwn )
+  let pp = either (error "Could not parse markDown (as if possible)") id qq
   return $ writeHtmlString def pp
 
 markdownOpts :: ReaderOptions

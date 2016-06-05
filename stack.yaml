@@ -5,6 +5,7 @@ nix:
   - haskellPackages.alex
   - pkgconfig
   - webkitgtk2
+  - zlib
   - glib
   - cairo
   - pango

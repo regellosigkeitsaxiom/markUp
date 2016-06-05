@@ -24,3 +24,4 @@ executable markUp
                      , process == 1.2.3.0
                      , directory == 1.2.6.3
                      , text == 1.2.2.1
+                     --, blaze-html == 0.8.1.1
