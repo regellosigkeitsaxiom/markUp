@@ -23,3 +23,4 @@ executable markUp
                      , pandoc == 1.17.0.3
                      , process == 1.2.3.0
                      , directory == 1.2.6.3
+                     , text == 1.2.2.1
