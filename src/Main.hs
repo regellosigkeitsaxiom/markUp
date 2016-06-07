@@ -1,11 +1,12 @@
-{-# LANGUAGE BangPatterns, ScopedTypeVariables #-}
+{-# LANGUAGE BangPatterns, ScopedTypeVariables, TemplateHaskell #-}
 module Main where
 
-import Style
+--import Style
 
 import Graphics.UI.Gtk
 import Graphics.UI.Gtk.WebKit.WebView
 import Control.Concurrent
+import Control.Monad ( liftM )
 import System.Process
 import System.Directory
 import System.Environment
@@ -14,11 +15,16 @@ import Text.Pandoc
 import qualified Data.Text as T
 import qualified Data.Text.IO as TT
 import Control.Exception
+import Data.ByteString.UTF8
+import Data.FileEmbed
+import Data.List ( find )
+import Data.Maybe ( fromMaybe )
 
 main :: IO ()
 main = do
   initGUI
   filename <- getFileName
+  style <- getStyleName
   que <- doesFileExist filename
   if que
   then return ()
@@ -33,10 +39,10 @@ main = do
     , containerBorderWidth := 2
     ]
   set sw [ containerChild := wv ]
-  x <- loadFile filename
+  x <- loadFile filename style
   webViewLoadString wv x Nothing "/"
   widgetShowAll w
-  forkOS $ launchWatchdog filename wv
+  forkOS $ launchWatchdog filename style wv
   forkOS $ editor filename
   mainGUI --does not work with forkOS/forkIO
 
@@ -45,14 +51,14 @@ restart x = catch x ( \( e :: SomeException ) -> do
                       restart x
                     )
 
-launchWatchdog file webview = do
+launchWatchdog file style webview = do
   t <- getModificationTime file
-  restart $ watchdog file t webview
+  restart $ watchdog file style t webview
 
-loadFile :: String -> IO String
-loadFile file = do
+loadFile :: String -> String -> IO String
+loadFile file style = do
   !mrkdwn <- TT.readFile file
-  let qq = readMarkdown def ( foo ++ T.unpack mrkdwn )
+  let qq = readMarkdown def ( useCSS style ++ T.unpack mrkdwn )
   let pp = either (error "Could not parse markDown (as if possible)") id qq
   return $ writeHtmlString def pp
 
@@ -60,17 +66,17 @@ markdownOpts :: ReaderOptions
 markdownOpts = def
   { readerExtensions = githubMarkdownExtensions }
 
-watchdog file start webview = do
+watchdog file style start webview = do
   t <- getModificationTime file
   if t == start
   then do
     threadDelay 100000
-    restart $ watchdog file start webview
+    restart $ watchdog file style start webview
   else do
-    s <- loadFile file
+    s <- loadFile file style
     postGUISync $ webViewLoadString webview s Nothing "/"
     threadDelay 100000
-    restart $ watchdog file t webview
+    restart $ watchdog file style t webview
     
 
 editor :: String ->  IO ()
@@ -79,9 +85,31 @@ editor file = do
   waitForProcess ed
   mainQuit
 
+getStyleName :: IO String
+getStyleName = do
+  args <- getArgs
+  if args == []
+  then die "Usage: markUp style file"
+  else return $ head args
+
 getFileName :: IO FilePath
 getFileName = do
   args <- getArgs
-  if args == []
+  if Prelude.length args < 2
   then die "Need (.md) file as argument"
-  else return $ head args
+  else return $ args !! 1
+
+useCSS s = fromMaybe style_avenirWhite ( pickStyle (s++".css"))
+
+--Could use embedding whole directory here
+
+style_avenirWhite = "<style>"
+      ++ toString $( embedFile "styles/avenir-white.css" )
+      ++ "</style>"
+
+pickStyle :: FilePath -> Maybe String
+pickStyle f = liftM ( wrap . snd ) . find ( \(a,_) -> a==f ) $ styles
+  where
+  wrap x = "<style>" ++ toString x ++ "</style>"
+
+styles = $( embedDir "styles" )

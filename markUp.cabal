@@ -24,4 +24,6 @@ executable markUp
                      , process == 1.2.3.0
                      , directory == 1.2.6.3
                      , text == 1.2.2.1
+                     , utf8-string == 1.0.1.1
+                     , file-embed == 0.0.10
                      --, blaze-html == 0.8.1.1
