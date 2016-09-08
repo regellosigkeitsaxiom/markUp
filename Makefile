@@ -1,12 +1,12 @@
 project=$(shell basename `pwd`)
+binary=`stack --nix path --local-install-root`
 
-all: run
+all: build
 solve:
-	@stack solver --update-config
+	@stack --nix solver --update-config
 
-install:
-	@cowsay "You hear voice calling you \"Iceberg!\""
-	@stack --nix install
+install: build
+	@stack install
 	@echo -e '\033[1;32m\e[1mInstallation succesful\e[0m'
 
 deps:
@@ -14,7 +14,7 @@ deps:
 
 build:
 	@clear
-	@cowsay "You hear voice calling you \"Move along!\""
+	@cowsay "Compile!"
 	@stack --nix build
 	@echo -e '\e[1mBuild succesful\e[0m'
 
@@ -24,12 +24,27 @@ help:
 	@echo 'deps    → edit .cabal file'
 	@echo 'build   → compile'
 
-run: install
+run: build
 	@stack exec $(project)
 
-install_bsd: build
-	@stack install --local-bin-path .
-	@mv shorturl /usr/local/sbin/shorturl
-	@mv addurl /usr/local/sbin/addurl
-	@cp misc/shorturl /usr/local/etc/rc.d/shorturl
-	@cp misc/shorturl.conf /usr/local/etc/shorturl.conf
+pushw: build install
+	@echo 'Sending binary to remote server'
+	@scp -P 7999 -i ~/.ssh/gray_rsa ~/.local/bin/powerstand valentin@psm.polyus-nt.ru:~/processing
+
+push2: build install
+	@echo 'Sending binary to remote server'
+	@sshpass -p psmpass1! scp ~/.local/bin/powerstand psm@192.168.1.98:~/processing
+	@sshpass -p psmpass1! scp preset7.json psm@192.168.1.98:
+
+pushv: build install
+	@echo 'Sending binary to virtual machine'
+	@sshpass -p barter22 scp -P 2002 ~/.local/bin/powerstand naydenov@psm.golodnyj.ru:processing
+
+force:
+	stack build --ghc-options -fforce-recomp
+
+run-d: install-d
+	~/.local/bin/powerstand +RTS -xc
+
+ship: build
+	@git archive master -o /repo/$(project).tar.gz
