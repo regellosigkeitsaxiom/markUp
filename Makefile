@@ -46,5 +46,5 @@ force:
 run-d: install-d
 	~/.local/bin/powerstand +RTS -xc
 
-ship: build
+ship:
 	@git archive master -o /repo/$(project).tar.gz

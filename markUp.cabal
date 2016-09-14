@@ -27,3 +27,4 @@ executable markUp
                      , utf8-string == 1.0.1.1
                      , file-embed == 0.0.10
                      , containers == 0.5.6.2
+                     , JuicyPixels >= 3.2.7 && < 3.3
