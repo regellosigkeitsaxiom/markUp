@@ -14,6 +14,7 @@ import System.Exit
 import Text.Pandoc
 import qualified Data.Text as T
 import qualified Data.Text.IO as TT
+import qualified Data.Set as Set
 import Control.Exception
 import Data.ByteString.UTF8
 import Data.FileEmbed
@@ -39,8 +40,8 @@ main = do
     , containerBorderWidth := 2
     ]
   set sw [ containerChild := wv ]
-  x <- loadFile filename style
-  webViewLoadString wv x Nothing "/"
+  x <- loadMD filename style
+  webViewLoadString wv x ( Just "text/html" ) "/"
   widgetShowAll w
   forkOS $ launchWatchdog filename style wv
   forkOS $ editor filename
@@ -55,16 +56,32 @@ launchWatchdog file style webview = do
   t <- getModificationTime file
   restart $ watchdog file style t webview
 
-loadFile :: String -> String -> IO String
-loadFile file style = do
+loadMD :: String -> String -> IO String
+loadMD file style = do
   !mrkdwn <- TT.readFile file
-  let qq = readMarkdown def ( useCSS style ++ T.unpack mrkdwn )
+  let qq = readMarkdown optsR ( useCSS style ++ T.unpack mrkdwn )
   let pp = either (error "Could not parse markDown (as if possible)") id qq
-  return $ writeHtmlString def pp
-
-markdownOpts :: ReaderOptions
-markdownOpts = def
-  { readerExtensions = githubMarkdownExtensions }
+  return $ writeHtmlString optsW pp
+  where
+  optsR = def
+    { readerParseRaw = True
+    , readerApplyMacros = True
+    , readerExtensions = Set.union ( readerExtensions def ) $ Set.fromList
+      [ Ext_tex_math_dollars
+      , Ext_fancy_lists
+      , Ext_startnum
+      , Ext_intraword_underscores
+      , Ext_strikeout
+      , Ext_superscript
+      , Ext_subscript
+      , Ext_emoji
+      ]
+    }
+  optsW = def
+    { writerTableOfContents = True
+    , writerHTMLMathMethod = GladTeX
+    , writerTeXLigatures = True
+    }
 
 watchdog file style start webview = do
   t <- getModificationTime file
@@ -73,13 +90,13 @@ watchdog file style start webview = do
     threadDelay 100000
     restart $ watchdog file style start webview
   else do
-    s <- loadFile file style
+    s <- loadMD file style
     postGUISync $ webViewLoadString webview s Nothing "/"
     threadDelay 100000
     restart $ watchdog file style t webview
     
 
-editor :: String ->  IO ()
+editor :: String -> IO ()
 editor file = do
   ed <- runCommand $ "$EDITOR " ++ file
   waitForProcess ed

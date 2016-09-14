@@ -5,8 +5,8 @@ all: build
 solve:
 	@stack --nix solver --update-config
 
-install: build
-	@stack install
+install:
+	@stack --nix install
 	@echo -e '\033[1;32m\e[1mInstallation succesful\e[0m'
 
 deps:
@@ -24,8 +24,8 @@ help:
 	@echo 'deps    → edit .cabal file'
 	@echo 'build   → compile'
 
-run: build
-	@stack exec $(project)
+run:
+	@stack --nix exec $(project)
 
 pushw: build install
 	@echo 'Sending binary to remote server'
