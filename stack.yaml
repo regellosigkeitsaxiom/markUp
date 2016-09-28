@@ -5,7 +5,7 @@ nix:
   - haskellPackages.gtk2hs-buildtools
   - haskellPackages.happy
   - haskellPackages.alex
-  - haskellPackages.JuicyPixels
+# - haskellPackages.JuicyPixels
   - cabal-install
   - pkgconfig
   - webkitgtk2
