@@ -4,8 +4,8 @@ let
 
   inherit (nixpkgs) pkgs;
 
-  f = { mkDerivation, base, directory, file-embed, gtk, pandoc
-      , process, stdenv, text, utf8-string, webkit
+  f = { mkDerivation, base, containers, directory, file-embed, gtk
+      , JuicyPixels, pandoc, process, stdenv, text, utf8-string, webkit
       }:
       mkDerivation {
         pname = "markUp";
@@ -14,8 +14,8 @@ let
         isLibrary = false;
         isExecutable = true;
         executableHaskellDepends = [
-          base directory file-embed gtk pandoc process text utf8-string
-          webkit
+          base containers directory file-embed gtk JuicyPixels pandoc process
+          text utf8-string webkit
         ];
         homepage = "https://github.com/githubuser/markUp#readme";
         description = "Simple project template from stack";
