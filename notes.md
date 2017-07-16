@@ -14,4 +14,4 @@
 1. `[×]` Random fails "**File not found**" :( ~~Even when file is read strictly.~~
 1. `[×]` Create file if it does not exist.
 1. `[×]` CSS should lay in separate `.css` file, included during compilation.
-1. `[ ]` Should make nix installer, since gc cleanes up shared libraries. Something is broken here.
+1. `[x]` Should make nix installer, since gc cleanes up shared libraries. Something is broken here.

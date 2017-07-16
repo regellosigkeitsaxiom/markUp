@@ -24,8 +24,8 @@ import Data.Maybe ( fromMaybe )
 main :: IO ()
 main = do
   initGUI
-  filename <- getFileName
   style <- getStyleName
+  filename <- getFileName
   que <- doesFileExist filename
   if que
   then return ()
